@@ -1,3 +1,6 @@
+#what is ZKP / why we need it / its applications script, will go before "Scene.py" in the full video once I get there. 
+#main working explaination script, keeping other versions in the branch to hopefully maybe reference
+
 from manim import *
 
 class ZKP_Final_Presentation(Scene):
