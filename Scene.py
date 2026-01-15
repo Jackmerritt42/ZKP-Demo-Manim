@@ -2,7 +2,7 @@ from manim import *
 import numpy as np
 import random
 
-class ZKP_Final_Narrative_V9(Scene):
+class ZKP_Demo(Scene):
     def construct(self):
         # 0. DEFINITION
         self.intro_definition()
