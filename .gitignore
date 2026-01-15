@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Manim (Generated Media)
+/media/
+/images/
+
+# LaTeX / Tex junk generated during rendering
+*.log
+*.aux
+*.dvi
+*.svg
+*.fdb_latexmk
+*.fls
+
+# OS specific
+.DS_Store
+Thumbs.db
