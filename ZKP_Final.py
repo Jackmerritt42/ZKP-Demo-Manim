@@ -5,37 +5,33 @@ import random
 class ZKP_Final(Scene):
     def construct(self):
         # ==========================================
-        # SECTION 1: ZKP PRESENTATION (The "Why")
+        # SECTION 1: PRESENTATION (The "Why")
         # ==========================================
-        self.part_0_intro()
-        self.part_1_id_card()
-        self.part_2_medical_simple()
-        self.part_3_core_value()
+        self.section_1_intro()
+        self.section_2_id_card()    # Part 1
+        self.section_3_medical()    # Part 2
+        self.section_4_value()      # Transition
 
         # ==========================================
-        # SECTION 2: SCENE DEMOS (The "How")
+        # SECTION 2: TECHNICAL DEMOS (The "How")
         # ==========================================
-        # Note: There is a second definition section here from Scene.py. 
-        # You may wish to remove 'self.intro_definition()' if it feels redundant,
-        # but I have included it to ensure "all content" is present as requested.
-        self.intro_definition() 
+        self.section_5_tech_def()
         
-        self.intro_sequence_1()
-        self.scene_colorblind_loop()
+        self.section_6_colorblind_intro() # Part 3
+        self.section_7_colorblind_loop()
         
-        self.intro_sequence_waldo()
-        self.scene_wheres_waldo()
+        self.section_8_waldo_intro()      # Part 4
+        self.section_9_waldo_scene()
         
-        self.intro_sequence_alibaba()
-        self.scene_alibaba_final()
+        self.section_10_alibaba_intro()   # Part 5
+        self.section_11_alibaba_scene()
         
-        self.outro_contact_slide()
+        self.section_12_outro()
 
     # ==========================================
-    # METHODS FROM ZKP_PRESENTATION.PY
+    # 1. INTRO & DEFINITION
     # ==========================================
-
-    def part_0_intro(self):
+    def section_1_intro(self):
         # --- TITLE SEQUENCE ---
         title = Text("Zero-Knowledge Proofs", font_size=48, color=BLUE).to_edge(UP)
         subtitle = Text("The Future of Data Security", font_size=32, color=GREY).next_to(title, DOWN)
@@ -44,21 +40,20 @@ class ZKP_Final(Scene):
         self.wait(1)
 
         # --- DEFINITION ---
-        # "What is it?"
-        def_box = Rectangle(height=2, width=8, color=WHITE, fill_opacity=0.1)
+        # FIX: Increased box size to fit the text comfortably
+        def_box = Rectangle(height=3.0, width=10.0, color=WHITE, fill_opacity=0.1)
         def_text = Text(
             "A cryptographic method to prove you know a secret\nwithout revealing the secret itself.", 
-            font_size=28, t2c={"without revealing": YELLOW}
+            font_size=28, 
+            t2c={"without revealing": YELLOW}
         ).move_to(def_box)
         
         self.play(Create(def_box), Write(def_text))
         self.wait(2)
 
         # --- WHY IT MATTERS ---
-        # Clear definition, show "Data Security" aspect
         self.play(FadeOut(def_text), FadeOut(def_box))
         
-        # Two pillars
         p1 = VGroup(
             Text("Privacy", color=BLUE, font_size=36),
             Text("Keep data user-controlled", font_size=20, color=GREY)
@@ -74,23 +69,23 @@ class ZKP_Final(Scene):
         
         self.play(FadeOut(Group(*self.mobjects)))
 
-    def part_1_id_card(self):
-        # --- TITLE ---
-        title = Text("Part 1: The Concept", font_size=36, color=BLUE).to_edge(UP)
+    # ==========================================
+    # 2. PRIVACY (ID Card)
+    # ==========================================
+    def section_2_id_card(self):
+        # RENAMED: Part 1
+        title = Text("Part 1: The Concept (Privacy)", font_size=36, color=BLUE).to_edge(UP)
         self.play(Write(title))
 
-        # --- THE SCENARIO ---
         narrative = Text("Goal: Prove Age > 21 without revealing personal data.", font_size=24).next_to(title, DOWN)
         self.play(Write(narrative))
 
         # --- THE ID CARD ---
         id_card = RoundedRectangle(height=3.5, width=5.5, corner_radius=0.2, color=WHITE)
-        
-        # Photo
         photo = Square(side_length=1.2, color=WHITE, fill_opacity=0.2)
         
-        # Data Fields (Grouped manually to avoid overlap issues)
-        l1 = Text("Name: John Doe", font_size=20)
+        # Data Fields
+        l1 = Text("Name: Victor Monk", font_size=20)
         l2 = Text("Address: 123 Main St", font_size=20, color=RED)
         l3 = Text("DOB: 01/01/1990", font_size=20, color=GREEN)
         l4 = Text("ID#: A123456789", font_size=20, color=RED)
@@ -102,7 +97,6 @@ class ZKP_Final(Scene):
         self.play(Create(id_card), FadeIn(content))
         self.wait(1)
 
-        # Highlight problem
         problem_text = Text("Standard ID reveals EVERYTHING.", color=RED, font_size=24).next_to(full_id, DOWN)
         self.play(Write(problem_text))
         self.wait(1)
@@ -110,12 +104,9 @@ class ZKP_Final(Scene):
         # --- THE ZKP SOLUTION ---
         self.play(FadeOut(problem_text))
         
-        # Mask - Fully Opaque (fill_opacity=1) to hide text underneath
         mask = Rectangle(height=3.6, width=5.6, color=BLUE, fill_opacity=1).move_to(id_card)
-        
-        # The Fact
         zkp_fact = Text("AGE > 21: YES", font_size=40, color=WHITE).move_to(mask)
-        zkp_group = VGroup(mask, zkp_fact) # Z-index handles order, mask covers ID
+        zkp_group = VGroup(mask, zkp_fact)
 
         self.play(FadeIn(zkp_group))
         
@@ -125,7 +116,11 @@ class ZKP_Final(Scene):
 
         self.play(FadeOut(Group(*self.mobjects)))
 
-    def part_2_medical_simple(self):
+    # ==========================================
+    # 3. UTILITY (Medical)
+    # ==========================================
+    def section_3_medical(self):
+        # RENAMED: Part 2
         title = Text("Part 2: Real World Application", font_size=36, color=BLUE).to_edge(UP)
         self.play(Write(title))
 
@@ -138,19 +133,16 @@ class ZKP_Final(Scene):
         # --- THE SECRET ---
         secret_box = Rectangle(height=1, width=2.5, color=YELLOW, fill_opacity=0.2).next_to(patient, UP, buff=0.5)
         
-        # Split text to avoid spacing issues
-        s_line1 = Text("DIAGNOSIS:", color=YELLOW, font_size=16)
-        s_line2 = Text("Sensitive Illness", color=YELLOW, font_size=16)
-        secret_text = VGroup(s_line1, s_line2).arrange(DOWN).move_to(secret_box)
+        # FIX: Used single Text object with newline to prevent weird letter spacing/gaps
+        secret_text = Text("DIAGNOSIS:\nSensitive Illness", color=YELLOW, font_size=16, line_spacing=1).move_to(secret_box)
         secret_group = VGroup(secret_box, secret_text)
         
         self.play(GrowFromCenter(secret_group))
         self.wait(0.5)
 
         # --- THE REQUIREMENT ---
-        r_line1 = Text("Requirement:", font_size=16, color=GREY)
-        r_line2 = Text("Eligible for Medicine?", font_size=16, color=GREY)
-        req_text = VGroup(r_line1, r_line2).arrange(DOWN).next_to(pharmacy, UP, buff=0.5)
+        # FIX: Same here, standard text block
+        req_text = Text("Requirement:\nEligible for Medicine?", font_size=16, color=GREY, line_spacing=1).next_to(pharmacy, UP, buff=0.5)
         
         self.play(Write(req_text))
         self.wait(1)
@@ -158,9 +150,8 @@ class ZKP_Final(Scene):
         # --- THE PROOF ---
         proof_box = RoundedRectangle(height=1, width=2, corner_radius=0.2, color=BLUE, fill_opacity=0.5)
         
-        p_line1 = Text("ELIGIBLE:", font_size=16, color=WHITE)
-        p_line2 = Text("YES", font_size=24, color=WHITE, weight=BOLD)
-        proof_text = VGroup(p_line1, p_line2).arrange(DOWN).move_to(proof_box)
+        # FIX: Standard text block
+        proof_text = Text("ELIGIBLE:\nYES", font_size=20, color=WHITE, weight=BOLD).move_to(proof_box)
         
         proof_group = VGroup(proof_box, proof_text).next_to(patient, RIGHT)
 
@@ -172,18 +163,19 @@ class ZKP_Final(Scene):
         # Move proof
         self.play(proof_group.animate.next_to(pharmacy, LEFT), run_time=2)
         
-        # Success
         check = Text("Dispense Meds", color=GREEN, font_size=20).next_to(proof_group, DOWN)
         self.play(Write(check))
         self.wait(2)
 
         self.play(FadeOut(Group(*self.mobjects)))
 
-    def part_3_core_value(self):
+    # ==========================================
+    # 4. CORE VALUE (Transition)
+    # ==========================================
+    def section_4_value(self):
         title = Text("Why This Matters", font_size=40, color=BLUE).to_edge(UP)
         self.play(Write(title))
 
-        # --- VISUAL: BOX -> CHECKMARK ---
         secret_box = Square(side_length=2, color=YELLOW, fill_opacity=0.2)
         secret_lbl = Text("My Secret\n(Knowledge)", font_size=20).move_to(secret_box)
         secret_grp = VGroup(secret_box, secret_lbl).shift(LEFT * 3)
@@ -198,7 +190,6 @@ class ZKP_Final(Scene):
         self.play(Write(proof_check), Write(proof_lbl))
         self.wait(1)
 
-        # --- KEY TEXT ---
         main_point = Text("Prove you know the secret...", font_size=32).shift(DOWN * 1.5)
         sub_point = Text("...without ever revealing it.", font_size=32, color=BLUE).next_to(main_point, DOWN)
         
@@ -206,7 +197,6 @@ class ZKP_Final(Scene):
         self.play(Write(sub_point))
         self.wait(2)
 
-        # --- FINAL TAG ---
         final_tag = Text('"Verify, don\'t trust."', font_size=48, color=YELLOW).to_edge(DOWN, buff=0.5)
         
         self.play(
@@ -218,12 +208,10 @@ class ZKP_Final(Scene):
         self.play(FadeOut(Group(*self.mobjects)))
 
     # ==========================================
-    # METHODS FROM SCENE.PY
+    # 5. TECHNICAL DEFINITION
     # ==========================================
-
-    # --- PART 0: WHAT IS A ZKP? ---
-    def intro_definition(self):
-        title = Title("What is a Zero-Knowledge Proof?").to_edge(UP)
+    def section_5_tech_def(self):
+        title = Title("Technical Definition").to_edge(UP)
         
         t1 = Text("Peggy wants to prove to Victor that she knows a secret,", font_size=28).shift(UP*1.5)
         t2 = Text("without revealing the secret itself.", font_size=28, color=YELLOW).next_to(t1, DOWN)
@@ -255,10 +243,13 @@ class ZKP_Final(Scene):
         self.wait(4)
         self.clear()
 
-    # --- PART 1: COLORBLIND ---
-    def intro_sequence_1(self):
+    # ==========================================
+    # 6. INTUITION (Colorblind)
+    # ==========================================
+    def section_6_colorblind_intro(self):
         self.clear()
-        title = Title("Part 1: The Intuition").to_edge(UP)
+        # RENAMED: Part 3
+        title = Title("Part 3: The Intuition").to_edge(UP)
         
         q1 = Text("The Core Problem:", color=BLUE, font_size=36).shift(UP)
         q2 = Text("How can I prove that I know something...", font_size=28).next_to(q1, DOWN)
@@ -272,8 +263,8 @@ class ZKP_Final(Scene):
         self.wait(4)
         self.clear()
 
-    def scene_colorblind_loop(self):
-        title = Title("Part 1: Interactive Proof").to_edge(UP)
+    def section_7_colorblind_loop(self):
+        title = Title("Part 3: Interactive Proof").to_edge(UP)
         self.add(title)
 
         cert_text = Text("Certainty:", font_size=24).to_corner(DL)
@@ -340,26 +331,32 @@ class ZKP_Final(Scene):
         self.wait(3)
         self.clear()
 
-    # --- PART 2: WHERE'S WALDO ---
-    def intro_sequence_waldo(self):
+    # ==========================================
+    # 7. WALDO
+    # ==========================================
+    def section_8_waldo_intro(self):
         self.clear()
-        title = Title("Part 2: Where's Waldo?").to_edge(UP)
+        # RENAMED: Part 4
+        title = Title("Part 4: Where's Waldo?").to_edge(UP)
         
         q1 = Text("The Problem:", color=BLUE, font_size=36).shift(UP)
         q2 = Text("How do you prove you found Waldo...", font_size=28).next_to(q1, DOWN)
         q3 = Text("...without showing WHERE he is on the map?", font_size=28, color=YELLOW).next_to(q2, DOWN)
         
-        self.play(Write(title), FadeIn(q1))
+        # FIX: Title appears first, then the Problem text
+        self.play(Write(title))
+        self.wait(0.5)
+        self.play(FadeIn(q1))
+        
         self.play(Write(q2))
         self.play(Write(q3))
         self.wait(4)
         self.clear()
 
-    def scene_wheres_waldo(self):
-        title = Title("Part 2: Zero-Knowledge Map").to_edge(UP)
+    def section_9_waldo_scene(self):
+        title = Title("Part 4: Zero-Knowledge Map").to_edge(UP)
         self.add(title)
 
-        # 1. THE MAP
         map_group = VGroup()
         map_bg = Rectangle(height=6, width=10, color=BLUE_E, fill_opacity=0.3)
         map_group.add(map_bg)
@@ -377,18 +374,14 @@ class ZKP_Final(Scene):
         waldo_ring = Circle(color=WHITE, radius=0.15).move_to(waldo_pos)
         map_group.add(waldo, waldo_ring)
         
-        # Shift entire map DOWN further to avoid title clash
         full_map = VGroup(map_group).shift(DOWN * 1.0)
 
-        # Just fade in the map (no text)
         self.play(FadeIn(full_map))
         self.wait(2)
 
-        # 2. THE GIANT SHIELD (Appears BEFORE text)
         hole_center = DOWN * 1.0
         hole_size = 0.4 
 
-        # HUGE rectangles
         r_top = Rectangle(width=25, height=12, color=BLACK, fill_opacity=1).move_to(hole_center + UP * (6 + hole_size))
         r_bot = Rectangle(width=25, height=12, color=BLACK, fill_opacity=1).move_to(hole_center + DOWN * (6 + hole_size))
         r_left = Rectangle(width=12, height=25, color=BLACK, fill_opacity=1).move_to(hole_center + LEFT * (6 + hole_size))
@@ -397,22 +390,17 @@ class ZKP_Final(Scene):
         hole_ring = Circle(radius=hole_size, color=WHITE).move_to(hole_center)
         shield_visual = VGroup(r_top, r_bot, r_left, r_right, hole_ring)
         
-        # Fade in Shield first
         self.play(FadeIn(shield_visual))
         
-        # 3. SOLUTION TEXT (On top of shield)
         t2 = Text("The Solution: Use a giant shield with a tiny hole.", font_size=24, color=YELLOW).to_edge(UP).shift(DOWN*1.5)
         self.play(Write(t2))
         
-        # 4. PROVING IT
         t3 = Text("Move the Map behind the shield...", font_size=24).next_to(t2, DOWN)
         self.play(Write(t3))
         
-        # Move map behind shield
         current_waldo = waldo.get_center()
         shift_vector = hole_center - current_waldo
         
-        # Re-layering
         self.remove(full_map)
         self.add(full_map)
         self.add(shield_visual)
@@ -429,16 +417,18 @@ class ZKP_Final(Scene):
         self.wait(3)
         self.clear()
 
-    # --- PART 3: ALI BABA ---
-    def intro_sequence_alibaba(self):
-        title = Title("Part 3: The Classic Analogy").to_edge(UP)
+    # ==========================================
+    # 8. ALI BABA
+    # ==========================================
+    def section_10_alibaba_intro(self):
+        # RENAMED: Part 5
+        title = Title("Part 5: The Classic Analogy").to_edge(UP)
         q1 = Text("Ali Baba's Cave", color=BLUE, font_size=36).move_to(UP)
         q2 = Text("A physical demonstration of Zero Knowledge.", font_size=24).next_to(q1, DOWN)
         
         q3 = Text("This shows I can prove I possess a secret key", font_size=24, color=YELLOW).next_to(q2, DOWN, buff=0.5)
         q4 = Text("without ever showing myself using the key.", font_size=24, color=YELLOW).next_to(q3, DOWN)
         
-        # Sequential Animation
         self.play(Write(title))
         self.play(FadeIn(q1))
         self.wait(0.5)
@@ -449,8 +439,8 @@ class ZKP_Final(Scene):
         self.wait(3)
         self.clear()
 
-    def scene_alibaba_final(self):
-        title = Title("Part 3: Ali Baba's Cave").to_edge(UP)
+    def section_11_alibaba_scene(self):
+        title = Title("Part 5: Ali Baba's Cave").to_edge(UP)
         self.add(title)
 
         cave_center = DOWN * 0.5
@@ -493,8 +483,10 @@ class ZKP_Final(Scene):
         self.wait(3)
         self.clear()
 
-    # --- OUTRO: CONTACT SLIDE ---
-    def outro_contact_slide(self):
+    # ==========================================
+    # 9. OUTRO
+    # ==========================================
+    def section_12_outro(self):
         name = Text("Jack Merritt", font_size=48, color=BLUE)
         
         info_group = VGroup(
