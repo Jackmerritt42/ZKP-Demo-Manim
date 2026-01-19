@@ -1,165 +1,191 @@
 from manim import *
+import numpy as np
 
-class FullPresentation(Scene):
+class ShorsAlgorithmDeepDive(Scene):
     def construct(self):
         # ==========================================
-        # PART 1: SEARCH COMPARISON (Classical vs Quantum)
+        # SCENE 1: THE SETUP (The Impossible Problem)
         # ==========================================
         
-        title = Text("The Search Problem", font_size=40).to_edge(UP)
-        subtitle = Text("Why Quantum breaks encryption keys", font_size=24, color=GREY).next_to(title, DOWN)
-        self.play(Write(title), Write(subtitle))
-        
-        line = Line(UP*2, DOWN*3)
-        self.play(Create(line))
+        # Title
+        title = Text("How Shor's Algorithm Actually Works", font_size=36).to_edge(UP)
+        self.play(Write(title))
 
-        classical_label = Text("Classical Computer", font_size=28, color=BLUE).to_edge(LEFT, buff=1.5).shift(UP*2)
-        quantum_label = Text("Quantum Computer", font_size=28, color=PURPLE).to_edge(RIGHT, buff=1.5).shift(UP*2)
-        self.play(FadeIn(classical_label), FadeIn(quantum_label))
+        # The Number to Factor (N=15)
+        # We use 15 because it's small enough to visualize, but the logic holds for huge numbers
+        n_label = MathTex("N = 15", font_size=60).shift(UP*1)
+        factors = MathTex("? \\times ? = 15", font_size=60).next_to(n_label, DOWN)
+        
+        self.play(Write(n_label), Write(factors))
+        self.wait(1)
 
-        # --- Grids ---
-        def create_grid(color, location):
-            grid = VGroup()
-            for i in range(5):
-                for j in range(5):
-                    sq = Square(side_length=0.4, color=color, fill_opacity=0.2)
-                    sq.move_to(location + LEFT + UP + RIGHT*j*0.5 + DOWN*i*0.5)
-                    grid.add(sq)
-            return grid
+        # Classical Computer trying to guess
+        guess_text = Text("Classical Computer: Guessing...", font_size=24, color=BLUE).shift(DOWN*1.5)
+        self.play(FadeIn(guess_text))
+        
+        guess_num = Integer(2).next_to(guess_text, DOWN)
+        self.add(guess_num)
+        
+        # Rapidly cycle through numbers to show "brute force"
+        for i in [2, 3, 4, 5]:
+            guess_num.set_value(i)
+            self.wait(0.2)
+        
+        fail_comment = Text("(Easy for 15, Impossible for 2048-bit keys)", font_size=20, color=RED).next_to(guess_num, DOWN)
+        self.play(Write(fail_comment))
+        self.wait(1.5)
+        
+        # Clear Scene 1
+        self.play(FadeOut(Group(n_label, factors, guess_text, guess_num, fail_comment)))
 
-        grid_c = create_grid(BLUE, LEFT*3.5)
-        grid_q = create_grid(PURPLE, RIGHT*3.5)
-        self.play(Create(grid_c), Create(grid_q))
+
+        # ==========================================
+        # SCENE 2: THE QUANTUM TRANSFORMATION
+        # ==========================================
         
-        target_index = 12 
+        step1 = Text("Step 1: Convert to a Pattern", font_size=32, color=PURPLE).to_edge(UP)
+        self.play(Transform(title, step1))
+
+        # Explanation: Shor's turns factoring into a "Period Finding" problem
+        # We pick a random guess 'a' (let's pick 7)
+        # Function: f(x) = 7^x mod 15
         
-        # --- Classical Animation ---
-        self.play(Indicate(classical_label))
-        desc_c = Text("Low Overhead, Sequential", font_size=20, color=BLUE).next_to(grid_c, DOWN)
-        self.play(Write(desc_c))
+        func_label = MathTex("f(x) = 7^x \\pmod{15}", font_size=48).shift(UP*1.5)
+        self.play(Write(func_label))
+
+        # Show the sequence generation (Superposition allows us to calculate these all at once implicitly)
+        # x = 0 -> 7^0 = 1
+        # x = 1 -> 7^1 = 7
+        # x = 2 -> 7^2 = 49 -> 4 (49 % 15)
+        # x = 3 -> 7^3 = 343 -> 13
+        # x = 4 -> 7^4 ... -> 1
         
-        for i in range(target_index + 1):
-            sq = grid_c[i]
-            if i == target_index:
-                self.play(sq.animate.set_color(YELLOW).set_fill(opacity=1), run_time=0.5)
-                found_text_c = Text("FOUND (13 steps)", font_size=24, color=YELLOW).next_to(grid_c, UP)
-                self.play(Write(found_text_c))
+        results = VGroup()
+        values = [1, 7, 4, 13, 1, 7, 4, 13] # The repeating pattern
+        
+        # Draw a simple number line / graph
+        axes = Axes(
+            x_range=[0, 8, 1],
+            y_range=[0, 15, 5],
+            x_length=8,
+            y_length=3,
+            axis_config={"include_numbers": True}
+        ).shift(DOWN*0.5)
+        
+        labels = axes.get_axis_labels(x_label="x", y_label="Result")
+        self.play(Create(axes), Write(labels))
+
+        # Plot points one by one (representing the calculation)
+        dots = VGroup()
+        for i, val in enumerate(values):
+            dot = Dot(point=axes.c2p(i, val), color=YELLOW)
+            dots.add(dot)
+            if i < 4: # Only animate the first few slowly
+                self.play(FadeIn(dot), run_time=0.3)
             else:
-                self.play(sq.animate.set_color(RED).set_fill(opacity=0.5), run_time=0.05)
-                self.play(sq.animate.set_color(BLUE).set_fill(opacity=0.2), run_time=0.05)
-
-        self.wait(0.5)
-
-        # --- Quantum Animation ---
-        self.play(Indicate(quantum_label))
+                self.add(dot) # Speed up
         
-        # 1. Inefficiency
-        overhead_text = Text("Initializing (High Overhead)...", font_size=20, color=GREY).next_to(grid_q, DOWN)
-        self.play(Write(overhead_text))
-        loading_dots = VGroup(*[Circle(radius=0.05, color=WHITE, fill_opacity=1) for _ in range(3)]).arrange(RIGHT).next_to(overhead_text, DOWN)
-        self.play(FadeIn(loading_dots))
-        self.play(
-            loading_dots[0].animate.set_color(PURPLE),
-            loading_dots[1].animate.set_color(PURPLE),
-            loading_dots[2].animate.set_color(PURPLE),
-            run_time=1.0 
-        )
-        self.play(FadeOut(loading_dots), FadeOut(overhead_text))
+        # Connect them to show the pattern
+        graph = axes.plot_line_graph(x_values=list(range(8)), y_values=values, line_color=YELLOW, add_vertex_dots=False)
+        self.play(Create(graph))
 
-        # 2. Superposition
-        desc_q = Text("Superposition", font_size=20, color=PURPLE).next_to(grid_q, DOWN)
-        self.play(Write(desc_q))
-        self.play(grid_q.animate.set_color(TEAL).set_fill(opacity=0.5), run_time=1)
+        pattern_text = Text("Look! It repeats!", font_size=24, color=YELLOW).next_to(graph, UP)
+        self.play(Write(pattern_text))
         
-        # 3. Collapse
-        self.play(Transform(desc_q, Text("Measurement Collapse", font_size=20, color=PURPLE).next_to(grid_q, DOWN)))
-        animations = []
-        for i in range(25):
-            if i == target_index:
-                animations.append(grid_q[i].animate.set_color(YELLOW).set_fill(opacity=1).scale(1.2))
-            else:
-                animations.append(grid_q[i].animate.set_fill(opacity=0.05).scale(0.8)) 
-        self.play(*animations, run_time=1.5)
+        # Highlight the "Period"
+        # From x=0 to x=4, the pattern restarts. So Period (r) = 4.
+        brace = Brace(Line(axes.c2p(0,0), axes.c2p(4,0)), UP)
+        period_label = brace.get_text("Period (r) = ?")
+        self.play(GrowFromCenter(brace), Write(period_label))
         
-        found_text_q = Text("FOUND (1 step)", font_size=24, color=YELLOW).next_to(grid_q, UP)
-        self.play(Write(found_text_q))
-        self.wait(2)
-
-        # Clean up Part 1
-        self.play(FadeOut(Group(*self.mobjects)))
+        self.wait(1)
+        
+        # Clear for next step
+        self.play(FadeOut(Group(func_label, results, dots, graph, pattern_text, step1)))
 
 
         # ==========================================
-        # PART 2: SHOR'S ALGORITHM (The "Magic" Split)
+        # SCENE 3: QUANTUM FOURIER TRANSFORM (Finding 'r')
         # ==========================================
         
-        # Setup
-        shor_title = Text("Shor's Algorithm: The Key Breaker", font_size=36).to_edge(UP)
-        self.play(Write(shor_title))
+        step2 = Text("Step 2: Find the Frequency (QFT)", font_size=32, color=PURPLE).to_edge(UP)
+        self.play(Transform(title, step2))
 
-        # The "Public Key" (A Big Block)
-        # We represent the number N as a solid block that is hard to break
-        block = Rectangle(height=2, width=3, color=WHITE, fill_opacity=0.5, fill_color=GREY)
-        block_label = Text("Public Key (N)", font_size=24).move_to(block.get_center())
-        block_group = VGroup(block, block_label).shift(LEFT * 2)
+        # Explanation: A classical computer has to check x=1, x=2, x=3... to find the repeat.
+        # A Quantum computer throws a "Wave" at the data to see what fits.
+        
+        # Move axes down slightly
+        self.play(axes.animate.shift(DOWN*0.5), brace.animate.shift(DOWN*0.5), period_label.animate.shift(DOWN*0.5))
 
-        self.play(FadeIn(block_group))
+        # Visualizing Constructive Interference
+        # We try a "Wrong" frequency first (Red wave)
+        wrong_wave = axes.plot(lambda x: 7.5 + 5*np.sin(2*x), color=RED, x_range=[0, 8])
+        wrong_text = Text("Wrong Frequency (Destructive)", font_size=20, color=RED).to_edge(RIGHT).shift(UP)
         
-        # --- Classical Attempt ---
-        hammer = Square(side_length=0.5, color=BLUE, fill_opacity=1).next_to(block, RIGHT, buff=0.5)
-        hammer_label = Text("Classical", font_size=16, color=BLUE).next_to(hammer, UP)
-        
-        self.play(FadeIn(hammer), FadeIn(hammer_label))
-        
-        # Hammer hits block (Animation)
-        for _ in range(3):
-            self.play(hammer.animate.shift(LEFT * 0.3), run_time=0.1)
-            self.play(hammer.animate.shift(RIGHT * 0.3), run_time=0.1)
-        
-        fail_text = Text("Too Hard.", font_size=20, color=RED).next_to(block, DOWN)
-        self.play(Write(fail_text))
+        self.play(Create(wrong_wave), Write(wrong_text))
         self.wait(0.5)
-        self.play(FadeOut(hammer), FadeOut(hammer_label), FadeOut(fail_text))
-
-        # --- Shor's Attempt (Quantum Wave) ---
-        wave = FunctionGraph(lambda x: 0.5 * np.sin(3*x), x_range=[-1, 1], color=PURPLE).rotate(PI/2).next_to(block, RIGHT, buff=1)
-        wave_label = Text("Shor's Algo", font_size=16, color=PURPLE).next_to(wave, UP)
-
-        self.play(FadeIn(wave), FadeIn(wave_label))
+        self.play(FadeOut(wrong_wave), FadeOut(wrong_text))
         
-        # Wave passes THROUGH the block
+        # We try the "Correct" frequency (Green wave)
+        # The period is 4.
+        correct_wave = axes.plot(lambda x: 7.5 + 6*np.cos((PI/2)*x), color=GREEN, x_range=[0, 8])
+        correct_text = Text("Correct Frequency!", font_size=20, color=GREEN).to_edge(RIGHT).shift(UP)
+        
+        self.play(Create(correct_wave), Write(correct_text))
+        
+        # The Quantum Computer "collapses" on this answer
+        final_r = MathTex("r = 4", font_size=40, color=GREEN).next_to(brace, UP)
+        self.play(Transform(period_label, final_r))
+        self.play(Indicate(final_r))
+        
+        self.wait(1)
+        self.play(FadeOut(Group(axes, labels, correct_wave, correct_text, brace, period_label, title)))
+
+
+        # ==========================================
+        # SCENE 4: THE CRACK (The Math)
+        # ==========================================
+        
+        step3 = Text("Step 3: The Crack", font_size=32, color=RED).to_edge(UP)
+        self.play(Write(step3))
+
+        # Now we have r=4. The math is simple from here.
+        # Formula: Factors share GCD with (guess^(r/2) +/- 1)
+        
+        # guess = 7, r = 4
+        math_1 = MathTex("\\text{Guess}^ {r/2} \\pm 1", font_size=48).shift(UP*1)
+        math_2 = MathTex("7^{4/2} \\pm 1", font_size=48).next_to(math_1, DOWN)
+        math_3 = MathTex("7^2 \\pm 1 \\rightarrow 49 \\pm 1", font_size=48).next_to(math_2, DOWN)
+        
+        self.play(Write(math_1))
+        self.wait(0.5)
+        self.play(Transform(math_1.copy(), math_2))
+        self.wait(0.5)
+        self.play(Transform(math_2.copy(), math_3))
+
+        # Calculate the two numbers
+        num_a = MathTex("49 - 1 = 48", color=BLUE).shift(LEFT*3 + DOWN*1.5)
+        num_b = MathTex("49 + 1 = 50", color=BLUE).shift(RIGHT*3 + DOWN*1.5)
+        
+        self.play(Write(num_a), Write(num_b))
+        
+        # GCD Calculation
+        # GCD(48, 15) = 3
+        # GCD(50, 15) = 5
+        
+        gcd_a = MathTex("GCD(48, 15) = \\mathbf{3}", font_size=60, color=YELLOW).next_to(num_a, DOWN)
+        gcd_b = MathTex("GCD(50, 15) = \\mathbf{5}", font_size=60, color=YELLOW).next_to(num_b, DOWN)
+        
+        self.play(Write(gcd_a), Write(gcd_b))
+        
+        final_factors = MathTex("15 = 3 \\times 5", font_size=80, color=GREEN).move_to(ORIGIN).shift(DOWN*1)
+        
+        # Clear math to show final result
         self.play(
-            wave.animate.move_to(block.get_center()).scale(2),
-            run_time=1.0
+            FadeOut(math_1), FadeOut(math_2), FadeOut(math_3), 
+            FadeOut(num_a), FadeOut(num_b),
+            Transform(Group(gcd_a, gcd_b), final_factors)
         )
         
-        # The Block SPLITS (Factoring)
-        # Create two smaller blocks
-        factor1 = Rectangle(height=2, width=1.4, color=RED, fill_opacity=0.8).move_to(block.get_center()).shift(LEFT*0.8)
-        factor2 = Rectangle(height=2, width=1.4, color=RED, fill_opacity=0.8).move_to(block.get_center()).shift(RIGHT*0.8)
-        
-        f1_label = Text("Private", font_size=16).move_to(factor1.get_center())
-        f2_label = Text("Key", font_size=16).move_to(factor2.get_center())
-
-        self.play(
-            FadeOut(block), FadeOut(block_label), FadeOut(wave),
-            FadeIn(factor1), FadeIn(f1_label),
-            FadeIn(factor2), FadeIn(f2_label),
-            run_time=0.5
-        )
-        
-        success_text = Text("Factored Instantly!", font_size=24, color=YELLOW).next_to(factor1, DOWN).shift(RIGHT*0.8)
-        self.play(Write(success_text))
-        self.wait(2)
-
-        # Final Cleanup
-        self.play(FadeOut(Group(*self.mobjects)))
-
-        # Final Summary
-        final_text = Paragraph(
-            "Shor's Algorithm finds the 'crack' in the math",
-            "that holds the Public Key together.",
-            alignment="center", font_size=32
-        )
-        self.play(Write(final_text))
+        self.play(Indicate(final_factors))
         self.wait(3)
