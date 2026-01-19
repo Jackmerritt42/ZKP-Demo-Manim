@@ -1,14 +1,13 @@
 from manim import *
 import numpy as np
 
-class ShorsComplete(Scene):
+class ShorsFinalFixed(Scene):
     def construct(self):
         
         # ==========================================
         # SCENE 1: PRIMER - THE SEARCH COMPARISON
         # ==========================================
         
-        # --- Setup Grids ---
         title_search = Text("The Difference: Finding the Needle", font_size=36).to_edge(UP)
         self.play(Write(title_search))
 
@@ -29,12 +28,10 @@ class ShorsComplete(Scene):
         grid_q = create_grid(PURPLE, RIGHT*3.5)
         self.play(Create(grid_c), Create(grid_q))
         
-        target_index = 12 # Center square
+        target_index = 12 
         
-        # --- Run Comparison ---
-        
-        # Classical (Sequential)
-        for i in range(6): # Just show a few checks
+        # Classical Animation
+        for i in range(6): 
             sq = grid_c[i]
             self.play(sq.animate.set_color(RED).set_fill(opacity=0.5), run_time=0.1)
             self.play(sq.animate.set_color(BLUE).set_fill(opacity=0.2), run_time=0.1)
@@ -42,10 +39,9 @@ class ShorsComplete(Scene):
         c_text = Text("Checks 1 by 1...", font_size=20, color=BLUE).next_to(grid_c, DOWN)
         self.play(Write(c_text))
 
-        # Quantum (Superposition)
+        # Quantum Animation
         self.play(grid_q.animate.set_color(TEAL).set_fill(opacity=0.5), run_time=0.8)
         
-        # Snap to target
         animations = []
         for i in range(25):
             if i == target_index:
@@ -60,7 +56,7 @@ class ShorsComplete(Scene):
         
         self.wait(1)
         
-        # Clean Scene 1
+        # NUCLEAR CLEANUP 1
         self.play(FadeOut(Group(*self.mobjects)))
 
 
@@ -78,7 +74,6 @@ class ShorsComplete(Scene):
         
         self.play(FadeOut(n_label), FadeOut(factors))
 
-        # --- Why 7? ---
         step1 = Text("Step 1: Pick a random guess 'a'", font_size=32, color=PURPLE).to_edge(UP)
         self.play(Transform(title, step1))
 
@@ -97,26 +92,22 @@ class ShorsComplete(Scene):
         step2 = Text("Step 2: Create the Function", font_size=32, color=PURPLE).to_edge(UP)
         self.play(Transform(title, step2))
 
-        # FIX: Move equation to top right to avoid clash
         func_label = MathTex("f(x) = 7^x \\pmod{15}", font_size=36).to_edge(UR, buff=1.0)
         self.play(Write(func_label))
 
-        # Data points
         values = [1, 7, 4, 13, 1, 7, 4, 13] 
         
-        # Graph Setup
         axes = Axes(
             x_range=[0, 8, 1],
             y_range=[0, 15, 5],
             x_length=9,
             y_length=3,
             axis_config={"include_numbers": True}
-        ).shift(UP*0.5) # Shifted up slightly to make room below for Brace
+        ).shift(UP*0.5)
         
         labels = axes.get_axis_labels(x_label="x", y_label="Result")
         self.play(Create(axes), Write(labels))
 
-        # Plot points
         dots = VGroup()
         for i, val in enumerate(values):
             dot = Dot(point=axes.c2p(i, val), color=YELLOW)
@@ -125,7 +116,6 @@ class ShorsComplete(Scene):
         graph = axes.plot_line_graph(x_values=list(range(8)), y_values=values, line_color=YELLOW, add_vertex_dots=False)
         self.play(Create(graph), FadeIn(dots))
 
-        # FIX: Move Brace UNDER the graph so waves don't hit it
         brace = Brace(Line(axes.c2p(0,0), axes.c2p(4,0)), DOWN)
         period_label = brace.get_text("Period (r) = ?")
         self.play(GrowFromCenter(brace), Write(period_label))
@@ -139,6 +129,9 @@ class ShorsComplete(Scene):
         
         step3 = Text("Step 3: Find the Frequency", font_size=32, color=PURPLE).to_edge(UP)
         self.play(Transform(title, step3))
+
+        # Fade out the noisy data points so we can see the wave clearly
+        self.play(FadeOut(dots), FadeOut(graph))
 
         # Wrong Wave (Red)
         wrong_wave = axes.plot(lambda x: 7.5 + 5*np.sin(2*x), color=RED, x_range=[0, 8])
@@ -154,13 +147,12 @@ class ShorsComplete(Scene):
         
         self.play(Create(correct_wave), Write(correct_text))
         
-        # Result r=4
         final_r = MathTex("r = 4", font_size=40, color=GREEN).next_to(brace, DOWN)
         self.play(Transform(period_label, final_r))
         self.wait(1)
 
         # Clear Graph for Math step
-        graph_group = VGroup(axes, labels, graph, dots, correct_wave, correct_text, brace, period_label, func_label)
+        graph_group = VGroup(axes, labels, correct_wave, correct_text, brace, period_label, func_label)
         self.play(FadeOut(graph_group))
 
 
@@ -171,12 +163,10 @@ class ShorsComplete(Scene):
         step4 = Text("Step 4: The Crack", font_size=32, color=RED).to_edge(UP)
         self.play(Transform(title, step4))
 
-        # FIX: Move r=4 to Top Left corner as reference
         ref_r = MathTex("r = 4", font_size=36, color=GREEN).to_edge(UL, buff=1.0).shift(DOWN*1)
         ref_a = MathTex("a = 7", font_size=36, color=PURPLE).next_to(ref_r, DOWN)
         self.play(Write(ref_r), Write(ref_a))
 
-        # The Math Center Stage
         math_1 = MathTex("\\text{Guess}^ {r/2} \\pm 1", font_size=48).shift(UP*1)
         math_2 = MathTex("7^{4/2} \\pm 1", font_size=48).next_to(math_1, DOWN)
         math_3 = MathTex("49 \\pm 1", font_size=48).next_to(math_2, DOWN)
@@ -187,28 +177,24 @@ class ShorsComplete(Scene):
         self.wait(0.5)
         self.play(Transform(math_2.copy(), math_3))
 
-        # Results
         num_a = MathTex("48", color=BLUE).shift(LEFT*2 + DOWN*1.5)
         num_b = MathTex("50", color=BLUE).shift(RIGHT*2 + DOWN*1.5)
         
         self.play(Write(num_a), Write(num_b))
         
-        # GCD
         gcd_a = MathTex("GCD(48, 15) = \\mathbf{3}", font_size=48, color=YELLOW).next_to(num_a, DOWN)
         gcd_b = MathTex("GCD(50, 15) = \\mathbf{5}", font_size=48, color=YELLOW).next_to(num_b, DOWN)
         
         self.play(Write(gcd_a), Write(gcd_b))
+        self.wait(1)
+
+        # NUCLEAR CLEANUP 2 (The Fix)
+        # Fade out EVERY object currently on screen
+        self.play(FadeOut(Group(*self.mobjects)))
         
-        # Final Answer
+        # Now fade in the final answer on a clean slate
         final_factors = MathTex("15 = 3 \\times 5", font_size=80, color=GREEN).move_to(ORIGIN)
-        
-        # Clear everything to show final answer
-        self.play(
-            FadeOut(math_1), FadeOut(math_2), FadeOut(math_3), 
-            FadeOut(num_a), FadeOut(num_b), FadeOut(ref_r), FadeOut(ref_a),
-            FadeOut(gcd_a), FadeOut(gcd_b),
-            FadeIn(final_factors)
-        )
+        self.play(FadeIn(final_factors))
         
         self.play(Indicate(final_factors))
         self.wait(3)
