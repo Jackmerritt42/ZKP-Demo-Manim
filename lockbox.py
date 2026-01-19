@@ -20,8 +20,11 @@ class FullPresentation(Scene):
         ).arrange(RIGHT, buff=0.5).shift(LEFT * 3)
         
         label_private = Text("Private Primes", font_size=20, color=RED).next_to(p_q_group, DOWN)
+        # NEW: Sentence explaining these create the key
+        label_private_sub = Text("These make the Private Key", font_size=16, color=RED).next_to(label_private, DOWN)
         
         self.play(FadeIn(p_q_group), FadeIn(label_private))
+        self.play(Write(label_private_sub))
         self.wait(1)
 
         # --- 3. THE PRODUCT (Public) ---
@@ -42,8 +45,8 @@ class FullPresentation(Scene):
         self.wait(2)
 
         # --- TRANSITION 1: CLEANUP ---
-        math_group = VGroup(p_q_group, label_private, n_val, label_public, arrow_easy, text_easy, arrow_hard, text_hard, question)
-        self.play(FadeOut(math_group))
+        # Fade EVERYTHING out
+        self.play(FadeOut(Group(*self.mobjects)))
         self.wait(0.5)
 
 
@@ -86,9 +89,13 @@ class FullPresentation(Scene):
         self.play(FadeIn(public_key_group), FadeIn(private_key_group))
         self.wait(0.5)
 
-        # Send Key
+        # Send Public Key (Label fades out as it moves)
         target_pk_pos = message.get_top() + UP * 1.0
-        self.play(public_key_group.animate.move_to(target_pk_pos), run_time=1.5)
+        self.play(
+            public_key.animate.move_to(target_pk_pos), 
+            FadeOut(pk_label),
+            run_time=1.5
+        )
         self.wait(0.5)
 
         # Put Message in Box
@@ -100,7 +107,6 @@ class FullPresentation(Scene):
         shackle_closed = Arc(radius=0.2, start_angle=0, angle=PI, color=GREY, stroke_width=6).next_to(lock_body, UP, buff=-0.1)
         closed_lock = VGroup(lock_body.copy(), shackle_closed).move_to(box.get_top())
 
-        self.play(public_key.animate.move_to(box.get_top()), FadeOut(pk_label))
         self.play(Transform(public_key, closed_lock), box.animate.set_fill(color=GREEN, opacity=0.3), run_time=0.5)
         
         # Send to Bob
@@ -108,7 +114,13 @@ class FullPresentation(Scene):
         self.play(locked_package.animate.next_to(bob, LEFT, buff=1.0), run_time=2)
 
         # Unlock
-        self.play(private_key.animate.next_to(public_key, RIGHT), run_time=1)
+        # FIX: Fade out the "Private Key" label when the key moves
+        self.play(
+            private_key.animate.next_to(public_key, RIGHT), 
+            FadeOut(prk_label),
+            run_time=1
+        )
+        
         open_lock_final = VGroup(lock_body.copy(), shackle_open.copy()).move_to(public_key.get_center())
         self.play(Transform(public_key, open_lock_final), box.animate.set_fill(color=GREY, opacity=0.1), run_time=0.5)
 
@@ -117,9 +129,8 @@ class FullPresentation(Scene):
         self.wait(2)
 
         # --- TRANSITION 2: CLEANUP ---
-        # We need to fade out everything from Scene 2 before starting Scene 3
-        lockbox_objects = VGroup(title_lock, alice, bob, locked_package, message, public_key, private_key_group, open_lock_final)
-        self.play(FadeOut(lockbox_objects))
+        # FIX: Fade out EVERYTHING cleanly
+        self.play(FadeOut(Group(*self.mobjects)))
         self.wait(0.5)
 
 
@@ -143,7 +154,8 @@ class FullPresentation(Scene):
         voters = VGroup()
         votes = VGroup()
         for i in range(3):
-            voter = Circle(radius=0.3, color=BLUE, fill_opacity=0.5).shift(LEFT * 4 + UP * (1.0 - i*1.0))
+            # FIX: Increased spacing (1.5 multiplier)
+            voter = Circle(radius=0.3, color=BLUE, fill_opacity=0.5).shift(LEFT * 4 + UP * (1.5 - i*1.5))
             voter_label = Text("Public", font_size=12).next_to(voter, DOWN)
             paper = Rectangle(height=0.3, width=0.5, color=WHITE, fill_opacity=1, stroke_color=GREY)
             paper.move_to(voter.get_center())
