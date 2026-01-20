@@ -51,7 +51,8 @@ class ShorsFinalFixed(Scene):
         
         self.play(*animations, run_time=0.8)
         
-        q_text = Text("Finds Pattern Instantly", font_size=20, color=PURPLE).next_to(grid_q, DOWN)
+        # FIX: Changed to "Amplifies Correct Pattern" to avoid the "Instant Magic" myth
+        q_text = Text("Amplifies Correct Pattern", font_size=20, color=PURPLE).next_to(grid_q, DOWN)
         self.play(Write(q_text))
         
         self.wait(1)
@@ -145,14 +146,17 @@ class ShorsFinalFixed(Scene):
         correct_wave = axes.plot(lambda x: 7.5 + 6*np.cos((PI/2)*x), color=GREEN, x_range=[0, 8])
         correct_text = Text("Correct Fit!", font_size=20, color=GREEN).next_to(correct_wave, UP).shift(RIGHT*2)
         
-        self.play(Create(correct_wave), Write(correct_text))
+        # FIX: Added disclosure that this is a continuous visual of a discrete process
+        approx_text = Text("(Continuous Approximation)", font_size=14, color=GREY).next_to(correct_text, DOWN)
+        
+        self.play(Create(correct_wave), Write(correct_text), FadeIn(approx_text))
         
         final_r = MathTex("r = 4", font_size=40, color=GREEN).next_to(brace, DOWN)
         self.play(Transform(period_label, final_r))
         self.wait(1)
 
         # Clear Graph for Math step
-        graph_group = VGroup(axes, labels, correct_wave, correct_text, brace, period_label, func_label)
+        graph_group = VGroup(axes, labels, correct_wave, correct_text, brace, period_label, func_label, approx_text)
         self.play(FadeOut(graph_group))
 
 

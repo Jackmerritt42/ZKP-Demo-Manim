@@ -8,9 +8,18 @@ class FullPresentation(Scene):
         
         # --- 1. THE OPENING QUESTION ---
         question = Text("So how does our current model work?", font_size=36)
+        # CHANGE: Disclose the Scheme
+        scheme = Text("(RSA Encryption)", font_size=24, color=GREY).next_to(question, DOWN)
+        
+        # CHANGE: Sequence the animation (Question first, then Scheme)
         self.play(Write(question))
-        self.wait(1.5)
-        self.play(question.animate.to_edge(UP))
+        self.wait(0.5)
+        self.play(FadeIn(scheme))
+        self.wait(1.0)
+        
+        # Group them to move together
+        header_group = VGroup(question, scheme)
+        self.play(header_group.animate.to_edge(UP))
 
         # --- 2. THE INGREDIENTS (Private) ---
         p_q_group = VGroup(
@@ -20,7 +29,6 @@ class FullPresentation(Scene):
         ).arrange(RIGHT, buff=0.5).shift(LEFT * 3)
         
         label_private = Text("Private Primes", font_size=20, color=RED).next_to(p_q_group, DOWN)
-        # NEW: Sentence explaining these create the key
         label_private_sub = Text("These make the Private Key", font_size=16, color=RED).next_to(label_private, DOWN)
         
         self.play(FadeIn(p_q_group), FadeIn(label_private))
@@ -29,23 +37,43 @@ class FullPresentation(Scene):
 
         # --- 3. THE PRODUCT (Public) ---
         n_val = MathTex("N", font_size=80, color=GREEN).shift(RIGHT * 3)
-        label_public = Text("Public Key", font_size=20, color=GREEN).next_to(n_val, DOWN)
+        
+        # CHANGE: Clarified Modulus + Exponent
+        label_mod = Text("Public Modulus", font_size=20, color=GREEN).next_to(n_val, DOWN)
+        label_exp = Text("(+ Exponent e)", font_size=16, color=GREEN).next_to(label_mod, DOWN)
+        
+        public_group = VGroup(label_mod, label_exp)
 
-        self.play(FadeIn(n_val), FadeIn(label_public))
+        self.play(FadeIn(n_val), FadeIn(public_group))
         self.wait(0.5)
 
         # --- 4. THE ARROWS ---
-        arrow_easy = Arrow(start=p_q_group.get_right() + UP*0.5, end=n_val.get_left() + UP*0.5, color=YELLOW, buff=0.2)
+        # CHANGE: Increased buff to 1.0 (from 0.2) and added scale(0.8) to shrink arrows
+        arrow_easy = Arrow(
+            start=p_q_group.get_right() + UP*0.5, 
+            end=n_val.get_left() + UP*0.5, 
+            color=YELLOW, 
+            buff=1.0
+        ).scale(0.8)
+        
         text_easy = Text("Multiply (Easy)", font_size=20, color=YELLOW).next_to(arrow_easy, UP)
         self.play(GrowArrow(arrow_easy), Write(text_easy))
         
-        arrow_hard = Arrow(start=n_val.get_left() + DOWN*0.5, end=p_q_group.get_right() + DOWN*0.5, color=RED, buff=0.2)
-        text_hard = Text("Factor (Impossible*)", font_size=20, color=RED).next_to(arrow_hard, DOWN)
-        self.play(GrowArrow(arrow_hard), Write(text_hard))
+        arrow_hard = Arrow(
+            start=n_val.get_left() + DOWN*0.5, 
+            end=p_q_group.get_right() + DOWN*0.5, 
+            color=RED, 
+            buff=1.0
+        ).scale(0.8)
+        
+        # Kept the "Intractable" fix from previous review
+        text_hard = Text("Factor (Intractable*)", font_size=20, color=RED).next_to(arrow_hard, DOWN)
+        footnote = Text("*Computationally Infeasible", font_size=14, color=GRAY).to_corner(DR)
+        
+        self.play(GrowArrow(arrow_hard), Write(text_hard), FadeIn(footnote))
         self.wait(2)
 
         # --- TRANSITION 1: CLEANUP ---
-        # Fade EVERYTHING out
         self.play(FadeOut(Group(*self.mobjects)))
         self.wait(0.5)
 
@@ -89,7 +117,7 @@ class FullPresentation(Scene):
         self.play(FadeIn(public_key_group), FadeIn(private_key_group))
         self.wait(0.5)
 
-        # Send Public Key (Label fades out as it moves)
+        # Send Public Key
         target_pk_pos = message.get_top() + UP * 1.0
         self.play(
             public_key.animate.move_to(target_pk_pos), 
@@ -114,7 +142,6 @@ class FullPresentation(Scene):
         self.play(locked_package.animate.next_to(bob, LEFT, buff=1.0), run_time=2)
 
         # Unlock
-        # FIX: Fade out the "Private Key" label when the key moves
         self.play(
             private_key.animate.next_to(public_key, RIGHT), 
             FadeOut(prk_label),
@@ -129,7 +156,6 @@ class FullPresentation(Scene):
         self.wait(2)
 
         # --- TRANSITION 2: CLEANUP ---
-        # FIX: Fade out EVERYTHING cleanly
         self.play(FadeOut(Group(*self.mobjects)))
         self.wait(0.5)
 
@@ -141,7 +167,11 @@ class FullPresentation(Scene):
         # --- SETUP ---
         title_vote = Text("The Voting Booth Analogy", font_size=36).to_edge(UP)
         sub_title_vote = Text("Public action (encrypt), Private action (decrypt)", font_size=24).next_to(title_vote, DOWN)
-        self.play(Write(title_vote), Write(sub_title_vote))
+        
+        # CHANGE: Sequenced the title and subtitle
+        self.play(Write(title_vote))
+        self.wait(0.5)
+        self.play(Write(sub_title_vote))
 
         # Box
         box_body = Square(side_length=2, color=WHITE, fill_opacity=0.5, fill_color=GREY)
@@ -154,7 +184,6 @@ class FullPresentation(Scene):
         voters = VGroup()
         votes = VGroup()
         for i in range(3):
-            # FIX: Increased spacing (1.5 multiplier)
             voter = Circle(radius=0.3, color=BLUE, fill_opacity=0.5).shift(LEFT * 4 + UP * (1.5 - i*1.5))
             voter_label = Text("Public", font_size=12).next_to(voter, DOWN)
             paper = Rectangle(height=0.3, width=0.5, color=WHITE, fill_opacity=1, stroke_color=GREY)
