@@ -51,9 +51,11 @@ class ShorsFinalFixed(Scene):
         
         self.play(*animations, run_time=0.8)
         
-        # FIX: Changed to "Amplifies Correct Pattern" to avoid the "Instant Magic" myth
+        # CHANGE: Expanded explanation of "Amplifies"
         q_text = Text("Amplifies Correct Pattern", font_size=20, color=PURPLE).next_to(grid_q, DOWN)
-        self.play(Write(q_text))
+        q_sub = Text("(Constructive Interference)", font_size=14, color=GRAY).next_to(q_text, DOWN)
+        
+        self.play(Write(q_text), Write(q_sub))
         
         self.wait(1)
         
@@ -117,7 +119,8 @@ class ShorsFinalFixed(Scene):
         graph = axes.plot_line_graph(x_values=list(range(8)), y_values=values, line_color=YELLOW, add_vertex_dots=False)
         self.play(Create(graph), FadeIn(dots))
 
-        brace = Brace(Line(axes.c2p(0,0), axes.c2p(4,0)), DOWN)
+        # CHANGE: Increased buffer to push brace completely below the numbers
+        brace = Brace(Line(axes.c2p(0,0), axes.c2p(4,0)), DOWN, buff=0.5)
         period_label = brace.get_text("Period (r) = ?")
         self.play(GrowFromCenter(brace), Write(period_label))
         
@@ -146,17 +149,21 @@ class ShorsFinalFixed(Scene):
         correct_wave = axes.plot(lambda x: 7.5 + 6*np.cos((PI/2)*x), color=GREEN, x_range=[0, 8])
         correct_text = Text("Correct Fit!", font_size=20, color=GREEN).next_to(correct_wave, UP).shift(RIGHT*2)
         
-        # FIX: Added disclosure that this is a continuous visual of a discrete process
-        approx_text = Text("(Continuous Approximation)", font_size=14, color=GREY).next_to(correct_text, DOWN)
+        # CHANGE: Added explicit disclosures about the visualization limits
+        approx_text = Text("*Visualizing discrete quantum states as a continuous wave", font_size=14, color=GREY).to_corner(DR).shift(UP*0.5)
+        disclaimer = Text("*QFT is complex linear algebra, simplified here as curve fitting", font_size=14, color=GREY).next_to(approx_text, DOWN)
         
-        self.play(Create(correct_wave), Write(correct_text), FadeIn(approx_text))
+        self.play(Create(correct_wave), Write(correct_text), FadeIn(approx_text), FadeIn(disclaimer))
         
         final_r = MathTex("r = 4", font_size=40, color=GREEN).next_to(brace, DOWN)
         self.play(Transform(period_label, final_r))
         self.wait(1)
 
         # Clear Graph for Math step
-        graph_group = VGroup(axes, labels, correct_wave, correct_text, brace, period_label, func_label, approx_text)
+        graph_group = VGroup(
+            axes, labels, correct_wave, correct_text, brace, 
+            period_label, func_label, approx_text, disclaimer
+        )
         self.play(FadeOut(graph_group))
 
 
